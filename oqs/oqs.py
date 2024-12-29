@@ -423,6 +423,21 @@ class Signature(ct.Structure):
             self._sig, ct.byref(public_key), ct.byref(self.secret_key)
         )
         return bytes(public_key) if rv == OQS_SUCCESS else 0
+        
+    def generate_keypair_from_fseed(self, seed=None):
+        """
+        Generates a new keypair and returns the public key.
+        
+        If needed, the secret key can be obtained with export_secret_key().
+        """
+        public_key = ct.create_string_buffer(self._sig.contents.length_public_key)
+        self.secret_key = ct.create_string_buffer(self._sig.contents.length_secret_key)
+        
+        # Передаем seed при вызове OQS_SIG_keypair
+        rv = native().OQS_SIG_keypair_from_fseed(
+            self._sig, ct.byref(public_key), ct.byref(self.secret_key), seed
+        )
+        return bytes(public_key) if rv == OQS_SUCCESS else 0
 
     def export_secret_key(self):
         """Exports the secret key."""
